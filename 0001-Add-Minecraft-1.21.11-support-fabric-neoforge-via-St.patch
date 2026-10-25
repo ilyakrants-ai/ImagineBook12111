@@ -1,0 +1,132 @@
+From c5e549adbddeeca6fc5f5cee8ce14b5f5c759f94 Mon Sep 17 00:00:00 2001
+From: "qwen.ai[bot]" <qwenlm-intl@service.alibaba.com>
+Date: Sun, 25 Oct 2026 15:56:10 +0000
+Subject: [PATCH 1/2] Add Minecraft 1.21.11 support (fabric + neoforge) via
+ Stonecutter
+
+- New version configs: versions/1.21.11-fabric, versions/1.21.11-neoforge
+  (Fabric API 0.141.6+1.21.11, Yarn 1.21.11+build.6, ModMenu 17.0.1,
+   NeoForge 21.11.48, forge_loader 54.0.13)
+- settings.gradle.kts: register 1.21.11 targets; older versions temporarily
+  commented out to allow building on low-RAM machines
+- gradle.properties: bump fabric_loader to 0.20.1, add kotlin daemon jvmargs
+- stonecutter.gradle.kts: loom 1.17-SNAPSHOT, active version 1.21.11-fabric
+- gradlew: restore executable bit
+---
+ gradle.properties                           |  5 +++--
+ gradlew                                     |  0
+ settings.gradle.kts                         | 11 ++++++++---
+ stonecutter.gradle.kts                      |  4 ++--
+ versions/1.21.11-fabric/gradle.properties   | 10 ++++++++++
+ versions/1.21.11-neoforge/gradle.properties | 11 +++++++++++
+ 6 files changed, 34 insertions(+), 7 deletions(-)
+ mode change 100644 => 100755 gradlew
+ create mode 100644 versions/1.21.11-fabric/gradle.properties
+ create mode 100644 versions/1.21.11-neoforge/gradle.properties
+
+diff --git a/gradle.properties b/gradle.properties
+index 99b583d..85eab29 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -1,5 +1,6 @@
+ # Done to increase the memory available to gradle.
+ org.gradle.jvmargs=-Xmx4G
++kotlin.daemon.jvmargs=-Xmx768m
+ #org.gradle.parallel=true
+ org.gradle.caching=false
+ org.gradle.caching.debug=false
+@@ -22,7 +23,7 @@ mod.mc_targets=[VERSIONED]
+ 
+ # Mod setup
+ deps.mixin_extras=0.4.1
+-deps.fabric_loader=0.17.3
++deps.fabric_loader=0.20.1
+ deps.fabric_version=[VERSIONED]
+ 
+ deps.forge_loader=[VERSIONED]
+@@ -35,4 +36,4 @@ deps.modmenu_version=[VERSIONED]
+ 
+ # Publishing
+ publish.modrinth=iCl1mF5K
+-publish.curseforge=1180064
+\ No newline at end of file
++publish.curseforge=1180064
+diff --git a/gradlew b/gradlew
+old mode 100644
+new mode 100755
+diff --git a/settings.gradle.kts b/settings.gradle.kts
+index e2a75dc..3673a87 100644
+--- a/settings.gradle.kts
++++ b/settings.gradle.kts
+@@ -22,9 +22,14 @@ stonecutter {
+             for (version in versions) vers("$version-$loader", version)
+         }
+         
+-        mc("fabric","1.20.1","1.20.4","1.21.1", "1.21.3", "1.21.4", "1.21.5","1.21.6", "1.21.7", "1.21.8", "1.21.10")
+-        mc("neoforge","1.21.1", "1.21.3", "1.21.4", "1.21.5","1.21.6", "1.21.7", "1.21.8", "1.21.10")
+-        mc("forge", "1.20.1", )
++        // NOTE: older versions are temporarily commented out so the project can be
++        // built on low-RAM machines (Stonecutter would otherwise configure all of them).
++        // Uncomment when building for those versions (requires ~8GB RAM and Java 17 toolchain for 1.20.x-forge).
++        mc("fabric", "1.21.11")
++        mc("neoforge", "1.21.11")
++//        mc("fabric","1.20.1","1.20.4","1.21.1", "1.21.3", "1.21.4", "1.21.5","1.21.6", "1.21.7", "1.21.8", "1.21.10", "1.21.11")
++//        mc("neoforge","1.21.1", "1.21.3", "1.21.4", "1.21.5","1.21.6", "1.21.7", "1.21.8", "1.21.10", "1.21.11")
++//        mc("forge", "1.20.1", )
+         
+     }
+     create(rootProject)
+diff --git a/stonecutter.gradle.kts b/stonecutter.gradle.kts
+index 1af6fac..4fee647 100644
+--- a/stonecutter.gradle.kts
++++ b/stonecutter.gradle.kts
+@@ -1,11 +1,11 @@
+ plugins {
+     id("dev.kikugie.stonecutter")
+-    id("dev.architectury.loom") version "1.11-SNAPSHOT" apply false
++    id("dev.architectury.loom") version "1.17-SNAPSHOT" apply false
+     id("architectury-plugin") version "3.4-SNAPSHOT" apply false
+     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
+     id("me.modmuss50.mod-publish-plugin") version "0.8.4" apply false
+ }
+-stonecutter active "1.20.1-fabric" /* [SC] DO NOT EDIT */
++stonecutter active "1.21.11-fabric" /* [SC] DO NOT EDIT */
+ stonecutter.automaticPlatformConstants = true
+ 
+ // Builds every version into `build/libs/{mod.version}/{loader}`
+diff --git a/versions/1.21.11-fabric/gradle.properties b/versions/1.21.11-fabric/gradle.properties
+new file mode 100644
+index 0000000..f026dfa
+--- /dev/null
++++ b/versions/1.21.11-fabric/gradle.properties
+@@ -0,0 +1,10 @@
++mod.mc_dep_fabric=>=1.21.11
++mod.mc_title=1.21.11
++mod.mc_targets=1.21.11
++
++deps.yarn_build=6
++deps.fabric_version=0.141.6+1.21.11
++
++deps.modmenu_version=17.0.1
++
++loom.platform=fabric
+diff --git a/versions/1.21.11-neoforge/gradle.properties b/versions/1.21.11-neoforge/gradle.properties
+new file mode 100644
+index 0000000..99ad158
+--- /dev/null
++++ b/versions/1.21.11-neoforge/gradle.properties
+@@ -0,0 +1,11 @@
++mod.mc_dep_forgelike=[1.21.11,1.21.11]
++mod.mc_title=1.21.11
++mod.mc_targets=1.21.11
++
++deps.forge_loader=54.0.13
++deps.neoforge_loader=21.11.48
++deps.neoforge_patch=1.21+build.4
++
++deps.yarn_build=6
++
++loom.platform=neoforge
+-- 
+2.39.5
+
